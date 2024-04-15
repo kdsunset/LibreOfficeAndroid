@@ -1,0 +1,16 @@
+// created by Makefile.shared - your changes will be overridden
+ext {
+    liboSrcRoot         = '/home/zhg/Workplace/LibreOffice/core'
+    liboJniLibsdir      = '/home/zhg/Workplace/LibreOffice/core/android/jniLibs'
+    liboWorkdir         = '/home/zhg/Workplace/LibreOffice/core/workdir'
+    liboInstdir         = '/home/zhg/Workplace/LibreOffice/core/instdir'
+    liboEtcFolder       = 'program'
+    liboUreMiscFolder   = 'program'
+    liboSharedResFolder = 'program/resource'
+    liboUREJavaFolder   = 'program/classes'
+    liboShareJavaFolder = 'program/classes'
+    liboVersionMajor    = '24'
+    liboVersionMinor    = '8'
+    liboGitFullCommit   = '432c866072aa62cf90168d569dc56cbc7269bcda'
+}
+

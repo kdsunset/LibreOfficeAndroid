@@ -1,0 +1,99 @@
+apply plugin: 'com.android.application'
+
+android {
+    namespace 'org.libreoffice'
+    compileSdk 34
+    buildFeatures {
+        buildConfig = true
+    }
+    defaultConfig {
+        // minSdkVersion is set in liboSettings.gradle
+        minSdk = 21
+        targetSdk 34
+        // multidex needed when > 65,536 methods referenced with minSdKVersion < 21
+        // s. https://developer.android.com/studio/build/multidex
+        multiDexEnabled true
+        vectorDrawables.useSupportLibrary = true
+        applicationId 'org.example.libreoffice'
+        archivesBaseName = 'LibreOfficeViewer'
+        versionCode project.hasProperty('cmdVersionCode') ? cmdVersionCode.toInteger() : 1
+        versionName '24.8.0.0.alpha0+'
+        buildConfigField('String', 'BUILD_ID_SHORT', '"432c86607"')
+        buildConfigField('String', 'VENDOR', '"zhg"')
+        buildConfigField('String', 'PRIVACY_POLICY_URL', '"undefined"')
+        ndk {
+            //noinspection ChromeOsAbiSupport
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
+
+    }
+    buildTypes {
+        debug {
+            // make android studio happy...
+            jniDebuggable true
+            // would work just fine with external, but setting emulator up is a little more work
+            manifestPlaceholders = [installLocation: "auto"]
+        }
+        release {
+            manifestPlaceholders = [installLocation: "preferExternal"]
+        }
+    }
+
+    flavorDimensions "default"
+    productFlavors {
+        strippedUI {
+            dimension "default"
+            buildConfigField 'boolean', 'ALLOW_EDITING', 'false'
+        }
+        strippedUIEditing {
+            dimension "default"
+            buildConfigField 'boolean', 'ALLOW_EDITING', 'true'
+        }
+        fullUI{
+            dimension "default"
+            buildConfigField 'boolean', 'ALLOW_EDITING', 'true'
+        }
+    }
+    // uses non-conventional source layout, so need to reconfigure accordingly
+    // ToDo move to conventional layout, so stuff can be stripped down.
+    sourceSets {
+        main {
+            //请解压libs/liblo-native-code.7z
+            jniLibs.srcDirs = ['libs']
+        }
+        fullUI.assets.srcDirs 'src/main/assets_fullUI'
+        strippedUI.assets.srcDirs 'src/main/assets_strippedUI'
+        strippedUIEditing.assets.srcDirs 'src/main/assets_strippedUI'
+    }
+    lint {
+        //将警告视为错误
+        warningsAsErrors true
+        // ignore missing or extra translations, since these are tracked/managed via Weblate
+        ignore 'ExtraTranslation', 'MissingTranslation'
+        // don't error-out on external updates (new gradle plugin, library versions
+        // or target API become available)
+        // don't error-out on TypographyEllipsis, since this can be introduced with
+        // new translations, and those are handled in Weblate
+        informational 'AndroidGradlePluginVersion', 'GradleDependency', 'NewerVersionAvailable', 'OldTargetApi', 'TypographyEllipsis'
+        // don't fail on pre-existing issues
+        // These should be dealt with at some point, though.
+        // To update lint-baseline.xml, just remove the file and run the build again.
+        baseline file("lint-baseline.xml")
+        // s.a. lint.xml that contains further config
+    }
+}
+
+// compile-time dependencies
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation "androidx.multidex:multidex:2.0.1"
+}
+
+
+
+// show warnings about use of deprecated API
+tasks.withType(JavaCompile).configureEach {
+    options.deprecation = true
+}
